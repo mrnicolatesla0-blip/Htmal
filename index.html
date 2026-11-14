@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fffaf2">
+  <meta name="description" content="भारत माता की जय। वन्दे मातरम्। जय हिन्द, जय भारत।">
+  <title>भारत माता की जय 🇮🇳 | वन्दे मातरम्</title>
+  <style>
+    :root {
+      --saffron: #ff8a1d;
+      --green: #138808;
+      --navy: #173a75;
+      --ink: #182238;
+      --paper: #fffaf2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Noto Sans Devanagari", "Mangal", sans-serif;
+      background:
+        radial-gradient(circle at 12% 15%, #ffdfbd 0, transparent 28%),
+        radial-gradient(circle at 88% 85%, #d9f0d5 0, transparent 30%),
+        var(--paper);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .page { width: min(920px, 100%); text-align: center; }
+    .topline {
+      display: inline-block;
+      color: #75502e;
+      letter-spacing: .16em;
+      font-size: .78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .card {
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,.92);
+      border: 1px solid #eadfce;
+      border-radius: 28px;
+      padding: clamp(28px, 6vw, 64px) 22px;
+      box-shadow: 0 22px 70px rgba(74, 55, 29, .12);
+    }
+    .tricolor {
+      display: flex;
+      height: 12px;
+      width: min(420px, 82%);
+      margin: 0 auto 34px;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .tricolor span { flex: 1; }
+    .saffron { background: var(--saffron); }
+    .white { background: #fff; border-block: 1px solid #eee; }
+    .green { background: var(--green); }
+    h1 {
+      margin: 0;
+      color: #d96b08;
+      font-size: clamp(2rem, 7vw, 4.5rem);
+      line-height: 1.25;
+      font-weight: 900;
+    }
+    .chakra {
+      width: 112px;
+      height: 112px;
+      margin: 30px auto;
+      border: 5px solid var(--navy);
+      border-radius: 50%;
+      position: relative;
+      display: grid;
+      place-items: center;
+      color: var(--navy);
+      font-size: 1.15rem;
+      font-weight: 800;
+      animation: turn 24s linear infinite;
+    }
+    .chakra::before, .chakra::after {
+      content: "";
+      position: absolute;
+      background: var(--navy);
+      opacity: .9;
+    }
+    .chakra::before { width: 3px; height: 100%; }
+    .chakra::after { height: 3px; width: 100%; }
+    .spokes {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: repeating-conic-gradient(from 0deg, transparent 0deg 13deg, var(--navy) 13deg 15deg, transparent 15deg 30deg);
+      mask: radial-gradient(circle, transparent 0 13%, #000 14% 100%);
+      -webkit-mask: radial-gradient(circle, transparent 0 13%, #000 14% 100%);
+    }
+    .chakra-core {
+      z-index: 1;
+      width: 17px;
+      height: 17px;
+      border: 3px solid var(--navy);
+      border-radius: 50%;
+      background: white;
+    }
+    @keyframes turn { to { transform: rotate(360deg); } }
+    h2 {
+      margin: 0;
+      color: var(--green);
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 900;
+    }
+    .subtitle {
+      margin: 16px 0 0;
+      color: #596579;
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+    }
+    .slogan {
+      min-height: 2em;
+      margin: 26px 0 18px;
+      color: var(--navy);
+      font-size: clamp(1.15rem, 3vw, 1.5rem);
+      font-weight: 750;
+    }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 24px;
+      background: var(--navy);
+      color: white;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+      box-shadow: 0 8px 20px #173a7530;
+      transition: transform .2s, box-shadow .2s;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 12px 24px #173a7540; }
+    button:focus-visible { outline: 3px solid var(--saffron); outline-offset: 4px; }
+    footer { margin-top: 22px; color: #786f63; font-size: .9rem; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topline">एकता • सम्मान • समर्पण</div>
+    <section class="card" aria-label="भारत के प्रति सम्मान">
+      <div class="tricolor" aria-hidden="true">
+        <span class="saffron"></span><span class="white"></span><span class="green"></span>
+      </div>
+      <h1>🇮🇳 भारत माता की जय 🇮🇳</h1>
+      <div class="chakra" role="img" aria-label="अशोक चक्र">
+        <span class="spokes"></span><span class="chakra-core"></span>
+      </div>
+      <h2>वन्दे मातरम्</h2>
+      <p class="subtitle">जय हिन्द • जय भारत</p>
+      <p class="slogan" id="slogan" aria-live="polite">अनेकता में एकता, भारत की विशेषता।</p>
+      <button id="sloganButton" type="button">एक और प्रेरक संदेश</button>
+    </section>
+    <footer>प्रेम, शांति और एकता के साथ • भारत 🇮🇳</footer>
+  </main>
+  <script>
+    const messages = [
+      "अनेकता में एकता, भारत की विशेषता।",
+      "हम सबका सम्मान, हमारा हिन्दुस्तान।",
+      "ज्ञान, साहस और एकता से उज्ज्वल भारत।",
+      "मेरा भारत, मेरी पहचान।",
+      "विविध संस्कृतियाँ, एक राष्ट्र।"
+    ];
+    let current = 0;
+    document.getElementById("sloganButton").addEventListener("click", () => {
+      current = (current + 1) % messages.length;
+      document.getElementById("slogan").textContent = messages[current];
+    });
+  </script>
+</body>
+</html>
