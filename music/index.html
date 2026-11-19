@@ -3,122 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#101326">
-<title>Dreamy Vibe | Anshu Music Lab</title>
+<meta name="theme-color" content="#24140f">
+<title>Bhojpuri Ringtone Studio | Anshu Music Lab</title>
 <style>
-:root{color-scheme:dark;--bg:#101326;--panel:#1b2038;--muted:#a9b0ca;--accent:#b7a5ff}
+:root{color-scheme:dark;--bg:#1b100e;--panel:#2a1a17;--muted:#d2bdb2;--accent:#ffbd69;--line:#ffffff20}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:grid;place-items:center;padding:22px;background:radial-gradient(circle at 15% 15%,#34305d 0,transparent 36%),radial-gradient(circle at 90% 85%,#23465a 0,transparent 32%),var(--bg);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#f5f3ff}
-.player{width:min(440px,100%);padding:30px;border:1px solid #ffffff20;border-radius:28px;background:#1b2038eF;box-shadow:0 24px 80px #0008}
-.art{height:210px;border-radius:20px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 45%,#d6c6ff 0 3%,#8d7be9 4% 13%,transparent 14%),radial-gradient(circle at 50% 50%,#6e68c8,#242d59 55%,#182039);position:relative}
-.art:before,.art:after{content:"";position:absolute;border:1px solid #ffffff45;border-radius:50%;width:180px;height:180px}
-.art:after{width:250px;height:250px}
-.disc{font-size:54px;z-index:1;filter:drop-shadow(0 5px 15px #0008)}
-.tag{margin:24px 0 5px;color:var(--accent);font-size:12px;letter-spacing:3px;text-transform:uppercase}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 15% 10%,#70402d 0,transparent 34%),radial-gradient(circle at 90% 90%,#4a2b22 0,transparent 35%),var(--bg);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#fff7ef}
+.player{width:min(520px,100%);padding:25px;border:1px solid var(--line);border-radius:26px;background:#2a1a17ed;box-shadow:0 24px 80px #0009}
+.art{height:150px;border-radius:19px;display:grid;place-items:center;background:radial-gradient(circle,#ffd99b 0 5%,#d87c3e 6% 16%,#793c2c 17% 48%,#321c1a 70%);font-size:54px}
+.tag{margin:20px 0 5px;color:var(--accent);font-size:11px;letter-spacing:3px;text-transform:uppercase}
 h1{font-size:27px;margin:0}
-p{color:var(--muted);margin:8px 0 22px}
-.controls{display:flex;justify-content:center;align-items:center;gap:18px;margin:20px 0}
-button{border:0;border-radius:50%;width:54px;height:54px;background:#ffffff16;color:white;font-size:20px;cursor:pointer}
-button.primary{width:68px;height:68px;background:var(--accent);color:#17142b;font-size:25px}
-button:focus-visible,input:focus-visible{outline:3px solid white;outline-offset:3px}
-button:disabled{opacity:.45;cursor:not-allowed}
+.sub{color:var(--muted);font-size:14px;margin:7px 0 18px}
+label{font-size:13px;color:var(--muted)}
+select{width:100%;margin-top:8px;padding:13px;border-radius:12px;border:1px solid var(--line);background:#3b2721;color:white;font:inherit}
+.description{min-height:38px;color:var(--muted);font-size:13px;margin:12px 0}
 .track{width:100%;accent-color:var(--accent);cursor:pointer}
-.times{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:6px}
-.volume{display:flex;align-items:center;gap:12px;margin-top:20px;color:var(--muted);font-size:13px}
+.times{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:5px}
+.controls{display:flex;justify-content:center;align-items:center;gap:18px;margin:18px 0}
+button{border:0;border-radius:50%;width:52px;height:52px;background:#ffffff18;color:white;font-size:20px;cursor:pointer}
+button.primary{width:66px;height:66px;background:var(--accent);color:#29170e;font-size:25px}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid white;outline-offset:3px}
+.volume{display:flex;align-items:center;gap:12px;margin-top:14px}
 .volume input{flex:1;accent-color:var(--accent)}
-.status{text-align:center;min-height:20px;font-size:12px;color:var(--muted);margin-top:18px}
+.status{text-align:center;min-height:20px;font-size:12px;color:var(--muted);margin-top:16px}
+.note{border-top:1px solid var(--line);margin-top:18px;padding-top:14px;color:#cbb5aa;font-size:11px;line-height:1.5}
 </style>
 </head>
 <body>
 <main class="player">
-  <div class="art" aria-label="Abstract dreamy album artwork"><span class="disc">☾</span></div>
-  <div class="tag">Anshu Music Lab</div>
-  <h1>Dreamy Chill</h1>
-  <p>Original ambient melody · Synthesized in your browser</p>
-  <input id="seek" class="track" type="range" min="0" max="8" step="0.01" value="0" aria-label="Track position">
-  <div class="times"><span id="elapsed">0:00</span><span>0:08</span></div>
+  <div class="art" aria-label="Folk music inspired artwork">🎶</div>
+  <div class="tag">Anshu Music Lab · Original compositions</div>
+  <h1>Bhojpuri Ringtone Studio</h1>
+  <p class="sub">8 short folk-inspired tones · Generated live in your browser</p>
+  <label for="tone">Choose your ringtone</label>
+  <select id="tone">
+    <option value="0">1. Purabi Bansuri</option>
+    <option value="1">2. Chaita Utsav</option>
+    <option value="2">3. Kajri Sawan</option>
+    <option value="3">4. Birha Echo</option>
+    <option value="4">5. Sohar Khushi</option>
+    <option value="5">6. Jhumar Jhoom</option>
+    <option value="6">7. Gaon Ki Shaam</option>
+    <option value="7">8. Dholak Celebration</option>
+  </select>
+  <div id="description" class="description">A gentle, flute-like melody with a warm folk pulse.</div>
+  <input id="seek" class="track" type="range" min="0" max="12" step="0.05" value="0" aria-label="Ringtone position">
+  <div class="times"><span id="elapsed">0:00</span><span>0:12</span></div>
   <div class="controls">
     <button id="restart" aria-label="Restart">↺</button>
     <button id="play" class="primary" aria-label="Play">▶</button>
     <button id="stop" aria-label="Stop">■</button>
   </div>
   <label class="volume">Volume <input id="volume" type="range" min="0" max="1" step="0.01" value="0.65"></label>
-  <div id="status" class="status" role="status">Press play to generate and hear the music.</div>
+  <div id="status" class="status" role="status">Select a tone and press play.</div>
+  <div class="note">These are newly generated Bhojpuri-folk-inspired melodies, not recordings or copies of existing songs. Use your device's media volume at a comfortable level.</div>
 </main>
 <script>
-const DURATION=8;
-let ctx=null, master=null, startedAt=0, offset=0, playing=false, raf=null, nodes=[];
-const playBtn=document.getElementById('play'), seek=document.getElementById('seek');
-const statusText=document.getElementById('status');
-const melody=[261.63,329.63,392.00,329.63,293.66,349.23,440.00,392.00];
-const bass=[130.81,130.81,146.83,146.83,110.00,110.00,130.81,130.81];
-function makeTone(freq,start,duration,gain,kind='sine'){
-  const osc=ctx.createOscillator(), amp=ctx.createGain();
-  osc.type=kind; osc.frequency.value=freq;
-  amp.gain.setValueAtTime(0.0001,start);
-  amp.gain.linearRampToValueAtTime(gain,start+0.06);
-  amp.gain.setValueAtTime(gain,start+Math.max(0.07,duration-0.12));
-  amp.gain.exponentialRampToValueAtTime(0.0001,start+duration);
-  osc.connect(amp); amp.connect(master);
-  osc.start(start); osc.stop(start+duration+0.02);
-  nodes.push(osc);
+const DURATION=12;
+const tones=[
+ {name:"Purabi Bansuri",desc:"A gentle, flute-like melody with a warm folk pulse.",wave:"sine",tempo:0.375,notes:[392,440,523.25,587.33,523.25,440,392,349.23,392,440,523.25,440,392,349.23,329.63,392]},
+ {name:"Chaita Utsav",desc:"A bright, festive phrase with a lively call-and-response feel.",wave:"triangle",tempo:0.30,notes:[523.25,587.33,659.25,587.33,523.25,440,523.25,587.33,783.99,698.46,659.25,587.33,523.25,440,392,523.25]},
+ {name:"Kajri Sawan",desc:"A soft monsoon mood with a flowing descending melody.",wave:"sine",tempo:0.45,notes:[440,523.25,587.33,523.25,440,392,349.23,392,440,523.25,440,392,349.23,329.63,392,440]},
+ {name:"Birha Echo",desc:"A spacious, expressive folk phrase with a slightly dramatic tone.",wave:"sawtooth",tempo:0.42,notes:[293.66,392,440,523.25,440,392,293.66,349.23,392,440,587.33,523.25,440,392,349.23,293.66]},
+ {name:"Sohar Khushi",desc:"A cheerful, warm melody with a celebratory lilt.",wave:"triangle",tempo:0.34,notes:[392,493.88,587.33,659.25,587.33,493.88,523.25,587.33,659.25,783.99,659.25,587.33,523.25,493.88,440,392]},
+ {name:"Jhumar Jhoom",desc:"A looping dance-like phrase over a steady low folk beat.",wave:"square",tempo:0.32,notes:[440,440,523.25,587.33,523.25,440,392,440,523.25,523.25,587.33,659.25,587.33,523.25,440,392]},
+ {name:"Gaon Ki Shaam",desc:"A calm evening tune with a mellow harmonium-like colour.",wave:"sine",tempo:0.48,notes:[329.63,392,440,392,349.23,392,329.63,293.66,329.63,392,440,523.25,440,392,349.23,329.63]},
+ {name:"Dholak Celebration",desc:"An upbeat melody with stronger synthesized dholak-style taps.",wave:"sawtooth",tempo:0.28,notes:[523.25,659.25,587.33,523.25,783.99,659.25,587.33,523.25,440,523.25,659.25,783.99,659.25,587.33,523.25,440]}
+];
+let ctx=null,master=null,playing=false,offset=0,startedAt=0,raf=null,nodes=[];
+const $=id=>document.getElementById(id);
+function addOsc(freq,start,duration,volume,wave,slide){
+ const osc=ctx.createOscillator(),amp=ctx.createGain();
+ osc.type=wave;osc.frequency.setValueAtTime(freq,start);
+ if(slide)osc.frequency.exponentialRampToValueAtTime(slide,start+duration);
+ amp.gain.setValueAtTime(.0001,start);amp.gain.exponentialRampToValueAtTime(volume,start+.025);
+ amp.gain.setValueAtTime(volume,start+duration*.55);amp.gain.exponentialRampToValueAtTime(.0001,start+duration);
+ osc.connect(amp);amp.connect(master);osc.start(start);osc.stop(start+duration+.02);nodes.push(osc);
 }
-function scheduleMusic(from){
-  const end=ctx.currentTime+(DURATION-from);
-  for(let t=from;t<DURATION;t+=0.5){
-    const index=Math.floor(t/0.5)%melody.length;
-    const at=ctx.currentTime+(t-from), length=Math.min(0.48,DURATION-t);
-    const fade=Math.min(1,(DURATION-t)/1);
-    makeTone(melody[index],at,length,0.105*fade,'sine');
-    if(index%2===0) makeTone(melody[index]/2,at,length,0.13*fade,'triangle');
-  }
-  makeTone(196,ctx.currentTime,Math.max(0.1,DURATION-from),0.025,'sine');
-  makeTone(246.94,ctx.currentTime,Math.max(0.1,DURATION-from),0.018,'sine');
+function addDrum(start,low){
+ const duration=low?.16:.075;
+ addOsc(low?145:950,start,duration,low?.20:.045,low?"sine":"triangle",low?65:420);
+}
+function schedule(from){
+ const tone=tones[Number($("tone").value)],step=tone.tempo;
+ for(let t=0;t<DURATION;t+=step){
+  if(t+step<from)continue;
+  const at=ctx.currentTime+Math.max(0,t-from),idx=Math.floor(t/step)%tone.notes.length;
+  const remaining=DURATION-t;
+  addOsc(tone.notes[idx],at,Math.min(step*.88,remaining),.105,tone.wave);
+  if(idx%4===0)addOsc(tone.notes[idx]/2,at,Math.min(step*1.5,remaining),.045,"triangle");
+  if(Math.round(t/step)%2===0)addDrum(at,Math.round(t/step)%4===0);
+ }
 }
 function update(){
-  if(!playing)return;
-  offset=Math.min(DURATION,ctx.currentTime-startedAt);
-  seek.value=offset;
-  document.getElementById('elapsed').textContent='0:'+String(Math.floor(offset)).padStart(2,'0');
-  if(offset>=DURATION){stopMusic();statusText.textContent='Track finished. Press play to listen again.';return;}
-  raf=requestAnimationFrame(update);
+ if(!playing)return;
+ offset=Math.min(DURATION,ctx.currentTime-startedAt);
+ $("seek").value=offset;
+ $("elapsed").textContent="0:"+String(Math.floor(offset)).padStart(2,"0");
+ if(offset>=DURATION){stop();$("status").textContent="Finished. Pick another tone or replay this one.";return;}
+ raf=requestAnimationFrame(update);
 }
-async function playMusic(){
-  if(playing)return;
-  if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=Number(document.getElementById('volume').value);master.connect(ctx.destination);}
-  await ctx.resume();
-  if(offset>=DURATION)offset=0;
-  nodes=[];
-  scheduleMusic(offset);
-  startedAt=ctx.currentTime-offset;
-  playing=true;playBtn.textContent='Ⅱ';playBtn.setAttribute('aria-label','Pause');
-  statusText.textContent='Playing your generated chill vibe.';
-  update();
+async function play(){
+ if(playing)return;
+ if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=Number($("volume").value);master.connect(ctx.destination);}
+ await ctx.resume();
+ if(offset>=DURATION)offset=0;
+ nodes=[];schedule(offset);startedAt=ctx.currentTime-offset;playing=true;
+ $("play").textContent="Ⅱ";$("play").setAttribute("aria-label","Pause");
+ $("status").textContent="Playing: "+tones[Number($("tone").value)].name;
+ update();
 }
-function pauseMusic(){
-  if(!playing)return;
-  offset=Math.min(DURATION,ctx.currentTime-startedAt);
-  playing=false;cancelAnimationFrame(raf);
-  if(ctx)ctx.suspend();
-  playBtn.textContent='▶';playBtn.setAttribute('aria-label','Play');
-  statusText.textContent='Paused.';
+function pause(){
+ if(!playing)return;
+ offset=Math.min(DURATION,ctx.currentTime-startedAt);playing=false;cancelAnimationFrame(raf);
+ nodes.forEach(n=>{try{n.stop()}catch(e){}});
+ ctx.suspend();$("play").textContent="▶";$("play").setAttribute("aria-label","Play");$("status").textContent="Paused.";
 }
-function stopMusic(){
-  playing=false;cancelAnimationFrame(raf);
-  nodes.forEach(n=>{try{n.stop()}catch(e){}});
-  if(ctx)ctx.suspend();
-  offset=0;seek.value=0;document.getElementById('elapsed').textContent='0:00';
-  playBtn.textContent='▶';playBtn.setAttribute('aria-label','Play');
+function stop(){
+ playing=false;cancelAnimationFrame(raf);nodes.forEach(n=>{try{n.stop()}catch(e){}});
+ if(ctx)ctx.suspend();offset=0;$("seek").value=0;$("elapsed").textContent="0:00";
+ $("play").textContent="▶";$("play").setAttribute("aria-label","Play");
 }
-playBtn.addEventListener('click',()=>playing?pauseMusic():playMusic());
-document.getElementById('stop').addEventListener('click',stopMusic);
-document.getElementById('restart').addEventListener('click',()=>{stopMusic();playMusic()});
-document.getElementById('volume').addEventListener('input',e=>{if(master)master.gain.value=Number(e.target.value)});
-seek.addEventListener('input',e=>{
-  const wasPlaying=playing; stopMusic(); offset=Number(e.target.value);
-  document.getElementById('elapsed').textContent='0:'+String(Math.floor(offset)).padStart(2,'0');
-  if(wasPlaying)playMusic();
-});
+$("play").addEventListener("click",()=>playing?pause():play());
+$("stop").addEventListener("click",stop);
+$("restart").addEventListener("click",()=>{stop();play()});
+$("volume").addEventListener("input",e=>{if(master)master.gain.value=Number(e.target.value)});
+$("tone").addEventListener("change",()=>{stop();$("description").textContent=tones[Number($("tone").value)].desc;$("status").textContent="Selected: "+tones[Number($("tone").value)].name;});
+$("seek").addEventListener("change",e=>{const resume=playing;stop();offset=Number(e.target.value);$("elapsed").textContent="0:"+String(Math.floor(offset)).padStart(2,"0");if(resume)play();});
 </script>
 </body>
 </html>
