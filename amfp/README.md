@@ -13,6 +13,10 @@ The first version accepts measurements from a trusted source and calculates:
 
 These measurements are **features**, not proof of an intrusion. Network handovers, distance, buildings, interference, and device behavior can all cause changes.
 
+## Cloud backend
+
+A FastAPI service is available in `backend/`. It accepts cellular measurement metadata supplied by a client and returns algebraic features plus baseline anomaly flags. See [`backend/README.md`](backend/README.md) for local setup, API authentication, example requests, and Docker instructions. The backend source is published; it has **not** been deployed to a public cloud host yet.
+
 ## Files
 
 - `amfp_math.asm`: x86-64 Linux NASM function that converts six measurements into nine output fields.
