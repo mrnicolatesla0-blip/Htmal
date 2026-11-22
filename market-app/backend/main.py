@@ -92,3 +92,60 @@ async def us_quote(symbol: str = Query(..., min_length=1, max_length=30)):
         return {"market": "USA", "provider": "Twelve Data", "quote": data}
     except httpx.HTTPError:
         raise HTTPException(status_code=502, detail="Could not reach the US market-data provider.")
+
+
+COINGECKO_API_URL = "https://api.coingecko.com/api/v3"
+
+def _coingecko_headers():
+    key = os.getenv("COINGECKO_DEMO_API_KEY", "").strip()
+    return {"x-cg-demo-api-key": key} if key else {}
+
+@app.get("/api/crypto/bitcoin")
+async def bitcoin_price():
+    """Read-only Bitcoin market snapshot in INR and USD."""
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            response = await client.get(
+                f"{COINGECKO_API_URL}/simple/price",
+                params={
+                    "ids": "bitcoin",
+                    "vs_currencies": "inr,usd",
+                    "include_market_cap": "true",
+                    "include_24hr_vol": "true",
+                    "include_24hr_change": "true",
+                    "include_last_updated_at": "true",
+                },
+                headers=_coingecko_headers(),
+            )
+        if response.status_code >= 400:
+            raise HTTPException(status_code=502, detail="Bitcoin data provider is temporarily unavailable.")
+        payload = response.json().get("bitcoin")
+        if not payload:
+            raise HTTPException(status_code=502, detail="Bitcoin price was not present in the provider response.")
+        return {"asset": "Bitcoin", "symbol": "BTC", "provider": "CoinGecko", "data": payload}
+    except httpx.HTTPError:
+        raise HTTPException(status_code=502, detail="Could not reach the Bitcoin market-data provider.")
+
+@app.get("/api/crypto/bitcoin/chart")
+async def bitcoin_chart():
+    """Return provider-supplied one-day historical price points."""
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.get(
+                f"{COINGECKO_API_URL}/coins/bitcoin/market_chart",
+                params={"vs_currency": "inr", "days": "1"},
+                headers=_coingecko_headers(),
+            )
+        if response.status_code >= 400:
+            raise HTTPException(status_code=502, detail="Bitcoin chart data is temporarily unavailable.")
+        payload = response.json()
+        return {
+            "asset": "Bitcoin",
+            "symbol": "BTC",
+            "currency": "INR",
+            "provider": "CoinGecko",
+            "granularity_note": "Provider-supplied historical points; interval depends on provider plan and availability.",
+            "prices": payload.get("prices", []),
+        }
+    except httpx.HTTPError:
+        raise HTTPException(status_code=502, detail="Could not reach the Bitcoin chart-data provider.")
