@@ -16,6 +16,7 @@
     <a class="navitem" href="#market"><span class="navicon">▤</span>Market updates</a>
     <a class="navitem" href="#chart"><span class="navicon">◷</span>Interactive chart</a>
     <a class="navitem" href="#stocks"><span class="navicon">▥</span>NSE stocks</a>
+    <a class="navitem" href="#bitcoin"><span class="navicon">₿</span>Bitcoin tracker</a>
   </nav>
   <nav class="navgroup" aria-label="More sections">
     <div class="navlabel">Explore</div>
@@ -34,6 +35,19 @@
     <div class="tickercard"><div class="tickername">ACCESS</div><div class="tickervalue">Read only</div><div class="tickerchange">No broker connection</div></div>
     <div class="tickercard"><div class="tickername">EXCHANGE</div><div class="tickervalue">NSE</div><div class="tickerchange">NSE integration only</div></div>
     <div class="tickercard"><div class="tickername">CONNECTION</div><div class="tickervalue" id="connection">Connecting…</div><div class="tickerchange" id="updated">No data loaded</div></div>
+  </section>
+  <section class="panel" id="bitcoin" style="margin-top:16px">
+    <div class="charthead"><div><strong>₿ Bitcoin market tracker</strong><div class="muted">BTC price information from CoinGecko · read-only market data</div></div><button id="btcRefresh">Refresh Bitcoin</button></div>
+    <div class="stockfacts" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:14px">
+      <div class="fact"><span>BTC / INR</span><strong id="btcInr">Loading…</strong></div>
+      <div class="fact"><span>BTC / USD</span><strong id="btcUsd">Loading…</strong></div>
+      <div class="fact"><span>24h change (INR)</span><strong id="btcChange">—</strong></div>
+      <div class="fact"><span>24h volume (INR)</span><strong id="btcVolume">—</strong></div>
+    </div>
+    <div class="chartlegend"><span><i class="legendline"></i>Provider historical price</span></div>
+    <canvas id="btcChart" aria-label="Bitcoin one-day historical price chart" style="width:100%;height:220px;display:block"></canvas>
+    <div class="chartmeta"><span id="btcUpdated">Waiting for provider timestamp…</span><span id="btcChartNote">Historical interval depends on provider availability</span></div>
+    <p class="note">Read-only educational display. This section does not connect to wallets, accept deposits, or buy or sell cryptocurrency.</p>
   </section>
   <div class="sectionhead"><div><h2>Market overview</h2><div class="muted">Price snapshots returned by the NSE data provider</div></div><span class="readbadge">● INFORMATION ONLY</span></div>
   <section class="panel chartpanel" id="chart">
@@ -65,6 +79,39 @@
 </div><script>
 const $=id=>document.getElementById(id);let tools=[],kind='gainers',market='IN';const priceHistory=new Map(),previousCloses=new Map(),latestRows=new Map();let chartSymbol='';
 function say(s){$('status').textContent=s}
+
+function money(v,currency){if(v===null||v===undefined)return '—';return new Intl.NumberFormat('en-IN',{style:'currency',currency,maximumFractionDigits:2}).format(v)}
+function drawBitcoinChart(points){
+ const canvas=$('btcChart');if(!canvas)return;const ctx=canvas.getContext('2d'),w=Math.max(300,canvas.clientWidth),h=220,dpr=window.devicePixelRatio||1;
+ canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
+ if(!points||points.length<2){ctx.fillStyle='#929aa8';ctx.font='13px system-ui';ctx.fillText('Historical Bitcoin prices are not available yet.',14,28);return}
+ const vals=points.map(p=>Number(p[1])).filter(Number.isFinite);if(vals.length<2)return;
+ const min=Math.min(...vals),max=Math.max(...vals),span=max-min||Math.max(1,max*.002),lo=min-span*.12,hi=max+span*.12,pad={l:76,r:14,t:12,b:28},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+ ctx.font='10px system-ui';ctx.strokeStyle='#2a3039';ctx.fillStyle='#929aa8';ctx.lineWidth=1;
+ for(let i=0;i<4;i++){const yy=pad.t+ch*i/3;ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(w-pad.r,yy);ctx.stroke();ctx.textAlign='right';ctx.fillText(Math.round(hi-(hi-lo)*i/3).toLocaleString('en-IN'),pad.l-8,yy+3)}
+ const xx=i=>pad.l+i/(points.length-1)*cw, yy=v=>pad.t+(hi-v)/(hi-lo)*ch;
+ const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);grad.addColorStop(0,'rgba(53,201,133,.22)');grad.addColorStop(1,'rgba(53,201,133,0)');
+ ctx.beginPath();points.forEach((p,i)=>{const px=xx(i),py=yy(Number(p[1]));if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py)});ctx.lineTo(xx(points.length-1),pad.t+ch);ctx.lineTo(xx(0),pad.t+ch);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+ ctx.beginPath();points.forEach((p,i)=>{const px=xx(i),py=yy(Number(p[1]));if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py)});ctx.strokeStyle='#43d6a0';ctx.lineWidth=2.3;ctx.lineJoin='round';ctx.stroke();
+ ctx.textAlign='left';ctx.fillText(new Date(points[0][0]).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),pad.l,h-7);ctx.textAlign='right';ctx.fillText(new Date(points[points.length-1][0]).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),w-pad.r,h-7);
+}
+async function loadBitcoin(){
+ $('btcRefresh').disabled=true;$('btcUpdated').textContent='Fetching provider data…';
+ try{
+  const [priceRes,chartRes]=await Promise.all([fetch('/api/crypto/bitcoin'),fetch('/api/crypto/bitcoin/chart')]);
+  const price=await priceRes.json(),chart=await chartRes.json();
+  if(!priceRes.ok)throw new Error(price.detail||'Bitcoin price request failed');
+  if(!chartRes.ok)throw new Error(chart.detail||'Bitcoin chart request failed');
+  const d=price.data||{};$('btcInr').textContent=money(d.inr,'INR');$('btcUsd').textContent=money(d.usd,'USD');
+  const change=d.inr_24h_change;$('btcChange').textContent=change===undefined?'—':Number(change).toFixed(2)+'%';$('btcChange').className=Number(change)>=0?'green':'red';
+  $('btcVolume').textContent=money(d.inr_24h_vol,'INR');
+  const stamp=d.last_updated_at?new Date(d.last_updated_at*1000).toLocaleString('en-IN'):'not supplied';
+  $('btcUpdated').textContent='Provider update: '+stamp+' · CoinGecko';
+  window.__btcPoints=chart.prices||[];drawBitcoinChart(window.__btcPoints);$('btcChartNote').textContent=(chart.prices||[]).length+' historical points · '+(chart.granularity_note||'');
+ }catch(e){$('btcUpdated').textContent='Bitcoin data unavailable: '+e.message}
+ finally{$('btcRefresh').disabled=false}
+}
+
 function setMarketLabels(){const us=market==='US';$('query').placeholder=us?'Search US company or ticker…':'Search NSE company or symbol…';$('selectedProvider').textContent=us?'Twelve Data':'NSE tools';$('selectedExchange').textContent=us?'US markets':'NSE';document.querySelector('.subline').textContent=us?'United States equity market · US listings':'Indian equity market · NSE data';document.querySelector('.tablehead .muted').textContent=us?'Search results from the US market-data provider':'Market listings returned by the NSE data provider';}
 function pretty(v){if(v===null||v===undefined||v==='')return '—';if(typeof v==='number')return v.toLocaleString('en-IN',{maximumFractionDigits:2});return String(v)}
 function findRows(v,depth=0,preferred=[]){if(depth>10||v==null)return null;if(typeof v==='string'){try{return findRows(JSON.parse(v),depth+1,preferred)}catch{return null}}if(Array.isArray(v)){if(v.length&&typeof v[0]==='object')return v;for(const x of v){const r=findRows(x,depth+1,preferred);if(r)return r}}if(typeof v==='object'){for(const key of preferred){if(v[key]!==undefined){const r=findRows(v[key],depth+1,preferred);if(r)return r}}if(v.data!==undefined){const r=findRows(v.data,depth+1,preferred);if(r)return r}for(const [k,x] of Object.entries(v)){if(Array.isArray(x)||typeof x==='string'||(x&&typeof x==='object')){const r=findRows(x,depth+1,preferred);if(r)return r}}}return null}
@@ -168,6 +215,6 @@ async function loadUSQuote(symbol){
 async function discover(){say('Connecting to NSE market data…');try{const r=await fetch('/api/nse/tools?server=live'),data=await r.json();if(!r.ok)throw Error(data.detail||'Market data connection failed');tools=data.tools||[];$('connection').textContent='NSE connected';await marketQuery();}catch(e){$('connection').textContent='Unavailable';say('Market data connection issue: '+e.message)}}
 
 async function marketQuery(){if(market==='US'){await searchUS();return}const t=chooseTool();if(!t){say('NSE did not publish the required '+kind+' data tool.');return}let args;try{args=argsFor(t)}catch(e){say(e.message);return}$('searchBtn').disabled=true;say('Requesting '+kind+' data from NSE using '+t.name+'…');try{const r=await fetch('/api/nse/call',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({server:'live',name:t.name,arguments:args})});const data=await r.json();if(!r.ok)throw Error(data.detail||'NSE request failed');render(data.result);$('updated').textContent='Updated '+new Date().toLocaleTimeString('en-IN');say('NSE response received. Verify the provider timestamp in the returned data.')}catch(e){say('No verified market rows returned: '+e.message);$('rows').innerHTML='<tr><td colspan="5" class="empty">The selected NSE tool did not return a usable table. Please try again.</td></tr>'}finally{$('searchBtn').disabled=false}}
-$('marketSelect').addEventListener('change',e=>{market=e.target.value;setMarketLabels();if(market==='IN'){discover()}else{priceHistory.clear();chartSymbol='';drawChart();$('connection').textContent='USA market selected';$('listTitle').textContent='USA company search';say('Search a US company or ticker. US quotes require the provider API key on Render.')}});$('chartSymbol').addEventListener('change',e=>{chartSymbol=e.target.value;drawChart()});window.addEventListener('resize',drawChart);$('searchBtn').addEventListener('click',marketQuery);$('query').addEventListener('keydown',e=>{if(e.key==='Enter')marketQuery()});document.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-kind]').forEach(x=>x.classList.remove('active'));b.classList.add('active');kind=b.dataset.kind;marketQuery()}));
-setMarketLabels();fetch('/api/health').then(r=>r.json()).then(()=>discover()).catch(()=>{$('connection').textContent='API unavailable';say('Could not reach the application API.')});setInterval(()=>{if(document.visibilityState==='visible'&&tools.length)marketQuery()},120000);
+$('marketSelect').addEventListener('change',e=>{market=e.target.value;setMarketLabels();if(market==='IN'){discover()}else{priceHistory.clear();chartSymbol='';drawChart();$('connection').textContent='USA market selected';$('listTitle').textContent='USA company search';say('Search a US company or ticker. US quotes require the provider API key on Render.')}});$('chartSymbol').addEventListener('change',e=>{chartSymbol=e.target.value;drawChart()});$('btcRefresh').addEventListener('click',loadBitcoin);window.addEventListener('resize',()=>{drawChart();drawBitcoinChart(window.__btcPoints||[])});$('searchBtn').addEventListener('click',marketQuery);$('query').addEventListener('keydown',e=>{if(e.key==='Enter')marketQuery()});document.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-kind]').forEach(x=>x.classList.remove('active'));b.classList.add('active');kind=b.dataset.kind;marketQuery()}));
+setMarketLabels();loadBitcoin();setInterval(()=>{if(document.visibilityState==='visible')loadBitcoin()},60000);fetch('/api/health').then(r=>r.json()).then(()=>discover()).catch(()=>{$('connection').textContent='API unavailable';say('Could not reach the application API.')});setInterval(()=>{if(document.visibilityState==='visible'&&tools.length)marketQuery()},120000);
 </script></body></html>
