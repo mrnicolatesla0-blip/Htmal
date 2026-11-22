@@ -34,3 +34,11 @@ The browser communicates with FastAPI; the backend connects to NSE. Do not expos
 - `POST /api/nse/call`
 
 No fabricated/sample prices are used. Provider errors are shown instead of invented values.
+
+## Deploy publicly
+
+This repository includes a Render Blueprint at the repository root. To deploy the FastAPI app, open the [Render deployment page](https://render.com/deploy?repo=https://github.com/mrnicolatesla0-blip/Htmal), sign in, review the service settings, and approve deployment. The Blueprint uses the free plan in Singapore and serves the frontend and API from the same web service.
+
+A parent or guardian should handle any hosting-account setup or approval that requires an adult account. No payment is needed for the configured free plan, but free services may sleep when idle.
+
+After deployment, test `/api/health` and then load the NSE tool catalogue in the website. Public hosting does not mean the NSE connection has been verified: confirm the live service response before relying on displayed data.
