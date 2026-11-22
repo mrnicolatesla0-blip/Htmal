@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>Bharat Market Data</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121d30;--line:#26354b;--muted:#93a4ba;--text:#edf4ff;--accent:#6db6ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui, sans-serif}
+main{max-width:1100px;margin:auto;padding:28px 18px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+h1{font-size:clamp(24px,4vw,36px);margin:0}.sub{color:var(--muted);margin:8px 0 24px}
+.pill{border:1px solid var(--line);border-radius:99px;padding:7px 12px;color:var(--muted);font-size:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:16px 0}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap}input,button{font:inherit;border-radius:9px;padding:10px 12px;border:1px solid var(--line);background:#0c1728;color:var(--text)}
+input{flex:1;min-width:220px}button{cursor:pointer;background:#17395e;border-color:#285a8c}
+table{width:100%;border-collapse:collapse;margin-top:12px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600;font-size:12px}
+.note{color:var(--muted);font-size:13px;line-height:1.6}.status{padding:14px;border-radius:10px;background:#0c1728;color:#b8c9dc;margin-top:14px}
+@media(max-width:650px){.tablewrap{overflow-x:auto}table{min-width:600px}}
+</style>
+</head>
+<body><main>
+<div class="top"><div><h1>Bharat Market Data 🇮🇳</h1><div class="sub">Indian equities · read-only market dashboard</div></div><span class="pill" id="connection">Checking API…</span></div>
+<section class="panel">
+<div class="toolbar"><input id="symbols" value="RELIANCE,TCS,INFY,HDFCBANK,SBIN" aria-label="Comma-separated NSE symbols"><button id="refresh">Fetch market data</button></div>
+<div id="status" class="status" role="status">Waiting for market-data provider configuration. No sample prices are shown.</div>
+<div class="tablewrap"><table><thead><tr><th>SYMBOL</th><th>EXCHANGE</th><th>LAST PRICE</th><th>CHANGE</th><th>CHANGE %</th><th>VOLUME</th><th>FEED TIME</th></tr></thead><tbody id="rows"><tr><td colspan="7">No verified quote data yet.</td></tr></tbody></table></div>
+<p class="note" id="updated">Quotes will appear here only after a licensed provider is configured.</p>
+</section>
+<p class="note">Market information can be delayed and may be incomplete. This dashboard is for learning and observation, not a recommendation to buy or sell. It does not execute trades.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function cell(value){const td=document.createElement("td");td.textContent=value??"—";return td}
+async function refresh(){
+ $("status").textContent="Requesting verified market data…";
+ try{
+  const symbols=encodeURIComponent($("symbols").value);
+  const response=await fetch("/api/market/quotes?symbols="+symbols);
+  const payload=await response.json();
+  if(!response.ok) throw new Error(payload.detail||"Market data unavailable.");
+  $("rows").replaceChildren();
+  for(const q of payload.quotes){
+   const tr=document.createElement("tr");
+   [q.symbol,q.exchange,q.ltp,q.change,q.change_percent,q.volume,q.timestamp].forEach(v=>tr.appendChild(cell(v)));
+   $("rows").appendChild(tr);
+  }
+  $("status").textContent="Connected to configured data provider.";
+  $("updated").textContent="Retrieved: "+payload.retrieved_at;
+ }catch(error){$("status").textContent=error.message;$("rows").innerHTML='<tr><td colspan="7">No verified quote data available.</td></tr>'}
+}
+$("refresh").addEventListener("click",refresh);
+fetch("/api/health").then(r=>r.json()).then(x=>$("connection").textContent=x.provider==="not_configured"?"Provider not configured":"API online").catch(()=>$("connection").textContent="API unavailable");
+</script></body></html>
