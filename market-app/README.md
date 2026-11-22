@@ -1,40 +1,36 @@
 # Bharat Market Data
 
-A market-data dashboard for Indian listed equities. This is a data/education project, not a broker and not investment advice.
+A read-only Indian market-data explorer connected to the **official NSE-hosted MCP data service**. It does not buy or sell shares and does not connect to a broker.
 
-## What is real, and what is not
-- The application does **not** generate sample prices or pretend that demo values are live.
-- It requests quotes from a market-data provider configured by the operator.
-- Live NSE/BSE data requires a provider subscription and the relevant exchange data-display permissions. The provider's API format must be connected in `backend/provider.py`.
-- Until a provider is configured, the API deliberately returns HTTP 503 rather than fabricated market prices.
+## Data endpoints
+
+- Current NSE market tools: `https://mcp.nseindia.in/cmmkt/mcp`
+- Historical end-of-day tools: `https://mcp.nseindia.in/bhavcopy/cm/mcp`
+
+The backend discovers the tool catalogue from NSE at runtime, displays each tool's description and input schema, and forwards read-only requests to the selected NSE tool. NSE documents these public endpoints as requiring no API key.
+
+## Freshness and coverage
+
+NSE describes intraday data as approximately 1–3 minutes delayed, with no tick-by-tick/order-book feed. The historical service provides end-of-day data. This integration is NSE-only; it does not include all BSE products or every market segment.
+
+## Usage restrictions
+
+NSE states that this MCP data is for informational use and is not for commercial exploitation, real-time trading, investment advice, or commercial deployment. Do not redistribute it or build a commercial product on it without obtaining the required permissions. Read the [official NSE MCP page](https://www.nseindia.in/nse-mcp) and linked terms.
 
 ## Run locally
-1. Create a Python virtual environment.
-2. Install `requirements.txt`.
-3. Copy `.env.example` to `.env` and configure the provider only after an authorised data subscription is in place.
-4. Run: `uvicorn backend.main:app --reload`
-5. Open `http://127.0.0.1:8000`.
 
-Never commit API keys, passwords, broker credentials, or `.env` files.
+1. Use Python 3.10+.
+2. Install dependencies: `pip install -r requirements.txt`.
+3. Start the backend: `uvicorn backend.main:app --reload`.
+4. Open `http://127.0.0.1:8000`.
 
-## Provider adapter contract
-Implement `fetch_quotes(symbols)` in `backend/provider.py` for the selected licensed provider. Return:
-```json
-{
-  "quotes": [
-    {
-      "symbol": "RELIANCE",
-      "exchange": "NSE",
-      "ltp": 0,
-      "change": 0,
-      "change_percent": 0,
-      "volume": 0,
-      "timestamp": "2026-01-01T09:15:00+05:30"
-    }
-  ]
-}
-```
-Replace the zeroes with actual provider values; never use these example numbers as market data.
+The browser communicates with FastAPI; the backend connects to NSE. Do not expose the backend publicly without rate limits, caching, security controls, and a review of NSE's terms.
 
-## Scope
-This first version is read-only: quotes and watchlist display only. It does not place orders, hold funds, or connect to a trading account. Any future regulated functionality needs qualified adult oversight and appropriate legal/compliance review.
+## API routes
+
+- `GET /api/health`
+- `GET /api/nse/tools?server=live`
+- `GET /api/nse/tools?server=history`
+- `POST /api/nse/call`
+
+No fabricated/sample prices are used. Provider errors are shown instead of invented values.
