@@ -1,4 +1,5 @@
 """Read-only client for the official NSE-hosted MCP endpoints."""
+import json
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
@@ -16,6 +17,14 @@ def _plain(value):
     if isinstance(value, dict):
         return {key: _plain(item) for key, item in value.items()}
     return value
+
+
+def _parse_text(text):
+    """MCP servers commonly return JSON inside TextContent rather than structuredContent."""
+    try:
+        return json.loads(text)
+    except (TypeError, json.JSONDecodeError):
+        return text
 
 
 async def list_nse_tools(server):
@@ -39,7 +48,7 @@ async def call_nse_tool(server, name, arguments):
     tools = await list_nse_tools(server)
     if not any(tool["name"] == name for tool in tools):
         raise ValueError("That tool is not published by the selected NSE server.")
-    async with streamablehttp_client(NSE_SERVERS[server], timeout=30, sse_read_timeout=30) as (read_stream, write_stream, _):
+    async with streamablehttp_client(NSE_SERVERS[server], timeout=45, sse_read_timeout=45) as (read_stream, write_stream, _):
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
             result = await session.call_tool(name, arguments)
@@ -49,7 +58,9 @@ async def call_nse_tool(server, name, arguments):
             content = []
             for item in getattr(result, "content", []):
                 if hasattr(item, "text"):
-                    content.append(item.text)
+                    content.append(_parse_text(item.text))
                 else:
                     content.append(_plain(item))
-            return {"isError": bool(getattr(result, "isError", False)), "content": content}
+            if len(content) == 1:
+                return {"isError": bool(getattr(result, "isError", False)), "data": content[0]}
+            return {"isError": bool(getattr(result, "isError", False)), "data": content}
