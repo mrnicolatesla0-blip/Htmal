@@ -23,10 +23,21 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0b1017;border:1px so
 <div class="top"><div class="brand">🇮🇳 BHARAT MARKET DATA</div><a href="/">← Back to market dashboard</a></div>
 <div class="eyebrow">Research module · Experiment 001</div>
 <h1>Bitcoin Research Engine</h1>
-<p class="lead">A reproducible SHA-256d throughput experiment using the authentic 80-byte Bitcoin Genesis Block header. The benchmark runs for approximately one second on this Render service and reports its actual measurements.</p>
+<p class="lead">A reproducible SHA-256d throughput experiment and read-only verification of the latest Bitcoin mainnet block using public blockchain data.</p>
 <section class="panel">
-<strong>Run one-second computation</strong><p class="note">This performs offline hashing of the same verified header. It does not search nonces, connect to Bitcoin, submit shares, or mine cryptocurrency.</p>
-<button id="run">Run experiment</button><span class="status" id="status">Ready · no experiment run yet</span>
+<strong>Live Bitcoin mainnet data</strong><p class="note">Fetch the latest public chain tip, retrieve its 80-byte block header, then independently calculate SHA-256d and check the proof-of-work target. Read-only: no mining, nonce search, peer-to-peer node, or transaction submission.</p>
+<button id="network-run">Fetch and verify latest block</button><span class="status" id="network-status">Ready · no network query yet</span>
+<div class="grid">
+<div class="metric"><span>Latest block height</span><strong id="block-height">—</strong></div>
+<div class="metric"><span>Header hash verified</span><strong id="block-hash-check">—</strong></div>
+<div class="metric"><span>Proof-of-work target</span><strong id="block-pow-check">—</strong></div>
+</div>
+<p class="note" id="network-meta">Source: Blockstream Esplora public API · Bitcoin mainnet</p>
+<pre id="network-details">No network result yet.</pre>
+</section>
+<section class="panel">
+<strong>Offline SHA-256d benchmark</strong><p class="note">This performs offline hashing of the same verified Genesis Block header for approximately one second. It measures this Render service's computation speed, not Bitcoin mining performance.</p>
+<button id="run">Run one-second benchmark</button><span class="status" id="status">Ready · no experiment run yet</span>
 <div class="grid">
 <div class="metric"><span>Hash calculations</span><strong id="count">—</strong></div>
 <div class="metric"><span>Measured duration</span><strong id="duration">—</strong></div>
@@ -34,18 +45,36 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0b1017;border:1px so
 </div>
 </section>
 <section class="panel">
-<strong>Verification record</strong>
+<strong>Benchmark verification record</strong>
 <p class="note" id="verify">The known Genesis Block hash will be checked before each timed run.</p>
 <pre id="digest">No result yet.</pre>
 </section>
 <section class="panel">
 <strong>Experiment scope</strong>
-<p class="note"><span class="pass">✓</span> Real SHA-256d calculations · <span class="pass">✓</span> Verified reference header · <span class="pass">✓</span> Measured execution time</p>
-<p class="note"><span class="warn">Not mining:</span> Fixed input, no nonce search, no Bitcoin node or pool connection, and zero network submissions. Results measure this service's benchmark throughput only.</p>
+<p class="note"><span class="pass">✓</span> Real SHA-256d calculations · <span class="pass">✓</span> Public mainnet block data · <span class="pass">✓</span> Local header and target verification</p>
+<p class="note"><span class="warn">Not mining:</span> This project reads public blockchain data and verifies existing blocks. It does not search for a new block, connect to a mining pool, broadcast transactions, or earn BTC.</p>
 </section>
 </main>
 <script>
 const $=id=>document.getElementById(id);
+$('network-run').addEventListener('click',async()=>{
+ const button=$('network-run');button.disabled=true;$('network-status').textContent='Requesting current mainnet tip…';
+ $('network-details').textContent='Fetching live public block data and verifying the header locally.';
+ try{
+  const response=await fetch('/api/research/bitcoin/network-tip');
+  const data=await response.json();if(!response.ok)throw new Error(data.detail||'Network query failed');
+  const b=data.block,v=data.verification;
+  $('block-height').textContent=Number(b.height).toLocaleString();
+  $('block-hash-check').textContent=v.header_hash_matches_api?'PASS':'FAIL';
+  $('block-pow-check').textContent=v.proof_of_work_meets_encoded_target?'PASS':'FAIL';
+  $('block-hash-check').className=v.header_hash_matches_api?'pass':'warn';
+  $('block-pow-check').className=v.proof_of_work_meets_encoded_target?'pass':'warn';
+  $('network-status').textContent=data.status==='verified'?'Live block retrieved · verification passed':'Block retrieved · verification needs review';
+  $('network-meta').textContent='Source: '+data.provider+' · '+data.network+' · Retrieved '+data.retrieved_at;
+  $('network-details').textContent='Block hash: '+b.hash+'\nCalculated hash: '+b.calculated_hash+'\nPrevious block: '+(b.previous_block_hash||'—')+'\nTimestamp (Unix): '+b.timestamp_unix+'\nTransactions: '+b.transaction_count+'\nnBits: '+b.bits+'\nNonce in existing block: '+b.nonce+'\nHeader bytes: '+b.header_bytes+'\n\nTarget: '+v.target_hex+'\nHeader hash matches API: '+v.header_hash_matches_api+'\nHash meets encoded proof-of-work target: '+v.proof_of_work_meets_encoded_target+'\n\nRaw header (hex):\n'+b.header_hex+'\n\nRead-only public API: '+data.scope.read_only_public_api+'\nP2P node connected: '+data.scope.bitcoin_p2p_node_connected+'\nNonce search: '+data.scope.nonce_search+'\nNetwork submissions: '+data.scope.network_submissions;
+ }catch(error){$('network-status').textContent='Error: '+error.message;$('network-details').textContent='No verified network result was returned.'}
+ finally{button.disabled=false}
+});
 $('run').addEventListener('click',async()=>{
  const button=$('run');button.disabled=true;$('status').textContent='Computing for approximately one second…';
  $('verify').textContent='Checking the Genesis Block reference and running the timed benchmark.';
