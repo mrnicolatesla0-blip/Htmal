@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090c12"><title>Bitcoin Wallet Monitor | Bharat Market Data</title>
+<style>
+:root{color-scheme:dark;--bg:#090c12;--panel:#141a23;--line:#293342;--text:#edf3fa;--muted:#9ba8b8;--green:#43d6a0;--cyan:#9de8e1;--amber:#f0c674}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:28px 18px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+a{color:var(--cyan);text-decoration:none}.brand{font-weight:800;letter-spacing:.2px}.eyebrow{color:var(--cyan);font-size:10px;letter-spacing:1.7px;text-transform:uppercase;margin-top:34px}
+h1{font-size:clamp(27px,5vw,42px);letter-spacing:-1.2px;margin:10px 0}.lead{color:var(--muted);line-height:1.7;max-width:760px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:20px;margin-top:20px}
+label{display:block;color:var(--muted);font-size:12px;margin:0 0 8px}input{width:100%;background:#0b1017;border:1px solid #394657;border-radius:9px;color:var(--text);padding:13px;font:13px ui-monospace,monospace}
+button{margin-top:12px;background:#1e3b37;border:1px solid #367b68;color:#d9fff2;padding:13px 18px;border-radius:10px;font-weight:750;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}.status{color:var(--muted);font-size:12px;margin-left:10px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+.metric{background:#0e141c;border:1px solid #263241;border-radius:11px;padding:15px;min-width:0}
+.metric span{display:block;color:var(--muted);font-size:11px}.metric strong{display:block;font-size:clamp(18px,3vw,25px);margin-top:8px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:12px;line-height:1.7}.warn{color:var(--amber)}.pass{color:var(--green)}
+.tablewrap{overflow:auto;margin-top:14px;border:1px solid #293342;border-radius:9px}table{width:100%;border-collapse:collapse;min-width:560px}th,td{text-align:left;padding:11px;border-bottom:1px solid #293342;font-size:11px}th{color:var(--muted);font-size:10px;text-transform:uppercase}td.hash{font-family:ui-monospace,monospace;overflow-wrap:anywhere}.empty{text-align:center;color:var(--muted);padding:22px}
+@media(max-width:650px){.grid{grid-template-columns:1fr 1fr}.panel{padding:15px}.status{display:block;margin:10px 0 0}}
+</style></head>
+<body><main>
+<div class="top"><div class="brand">🇮🇳 BHARAT MARKET DATA</div><a href="/bitcoin-research">← Bitcoin Research Engine</a></div>
+<div class="eyebrow">Research module · Experiment 002</div>
+<h1>Bitcoin Wallet Monitor</h1>
+<p class="lead">Inspect public Bitcoin mainnet address activity using Blockstream's read-only public API. This page does not create a wallet or hold funds.</p>
+<section class="panel">
+<strong>Monitor a public address</strong>
+<p class="note">Paste a public Bitcoin mainnet address. Never paste a private key, recovery phrase, password, or QR code containing secret wallet information.</p>
+<label for="address">Public Bitcoin address</label>
+<input id="address" maxlength="90" autocomplete="off" spellcheck="false" placeholder="bc1q… or 1… or 3…">
+<button id="load">Check address</button><span class="status" id="status">Ready · no address queried</span>
+</section>
+<section class="panel" aria-live="polite">
+<strong>Address overview</strong>
+<div class="grid">
+<div class="metric"><span>Confirmed balance</span><strong id="confirmed">—</strong></div>
+<div class="metric"><span>Including pending</span><strong id="total">—</strong></div>
+<div class="metric"><span>Confirmed transactions</span><strong id="txcount">—</strong></div>
+</div>
+<p class="note" id="meta">No address data loaded.</p>
+<p class="note" id="addressLabel"></p>
+</section>
+<section class="panel">
+<strong>Recent transactions</strong>
+<p class="note">Up to 25 recent transactions returned by the public explorer. Values are the net change for this address in each transaction.</p>
+<div class="tablewrap"><table><thead><tr><th>Transaction ID</th><th>Direction</th><th>Net change (BTC)</th><th>Status</th></tr></thead><tbody id="transactions"><tr><td colspan="4" class="empty">No address queried.</td></tr></tbody></table></div>
+</section>
+<section class="panel">
+<strong>System boundaries</strong>
+<p class="note"><span class="pass">✓</span> Public address lookup · <span class="pass">✓</span> Balance and transaction monitoring</p>
+<p class="note warn">No wallet generation · No private-key handling · No signing · No sending · No mining. A displayed balance is public blockchain information, not proof that this app owns or can spend it.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const btc=sats=>(Number(sats)/100000000).toFixed(8)+' BTC';
+$('load').addEventListener('click',async()=>{
+ const address=$('address').value.trim();
+ if(!address){$('status').textContent='Enter a public address first.';return}
+ const button=$('load');button.disabled=true;$('status').textContent='Querying public blockchain data…';
+ $('transactions').innerHTML='<tr><td colspan="4" class="empty">Loading transactions…</td></tr>';
+ try{
+  const response=await fetch('/api/research/bitcoin/address/'+encodeURIComponent(address));
+  const data=await response.json();if(!response.ok)throw new Error(data.detail||'Address lookup failed');
+  const b=data.balance;
+  $('confirmed').textContent=btc(b.confirmed_sats);
+  $('total').textContent=btc(b.total_including_pending_sats);
+  $('txcount').textContent=Number(data.transaction_count.confirmed).toLocaleString();
+  $('meta').textContent='Network: '+data.network+' · Provider: '+data.provider+' · Retrieved: '+data.retrieved_at+' · Pending balance change: '+btc(b.pending_delta_sats);
+  $('addressLabel').textContent='Monitored public address: '+data.address;
+  const rows=data.recent_transactions||[];
+  $('transactions').innerHTML=rows.length?rows.map(tx=>{
+   const value=(Number(tx.net_sats)/100000000).toFixed(8);
+   const status=tx.confirmed?'Confirmed':'Unconfirmed';
+   return '<tr><td class="hash">'+tx.txid+'</td><td>'+tx.direction+'</td><td>'+value+'</td><td>'+status+'</td></tr>';
+  }).join(''):'<tr><td colspan="4" class="empty">No transactions returned for this address.</td></tr>';
+  $('status').textContent='Address data loaded · read-only';
+ }catch(error){$('status').textContent='Error: '+error.message;$('confirmed').textContent='—';$('total').textContent='—';$('txcount').textContent='—';$('meta').textContent='No verified address result was returned.';$('transactions').innerHTML='<tr><td colspan="4" class="empty">Lookup failed.</td></tr>'}
+ finally{button.disabled=false}
+});
+</script></body></html>
