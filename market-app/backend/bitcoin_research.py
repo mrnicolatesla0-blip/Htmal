@@ -289,3 +289,73 @@ async def bitcoin_address_monitor(address: str):
             "spending_enabled": False,
         },
     }
+
+
+@router.get("/api/research/bitcoin/live-feed")
+async def bitcoin_live_feed():
+    """Read-only snapshot of recent mainnet mempool transactions and blocks."""
+    timeout = httpx.Timeout(15.0, connect=8.0)
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            mempool_response, recent_response, blocks_response = await __import__("asyncio").gather(
+                client.get(f"{ESPLORA_API}/mempool"),
+                client.get(f"{ESPLORA_API}/mempool/recent"),
+                client.get(f"{ESPLORA_API}/blocks"),
+            )
+            for response in (mempool_response, recent_response, blocks_response):
+                response.raise_for_status()
+            mempool = mempool_response.json()
+            recent_txs = recent_response.json()
+            blocks = blocks_response.json()
+        if not isinstance(mempool, dict) or not isinstance(recent_txs, list) or not isinstance(blocks, list):
+            raise ValueError("Unexpected response shape from public explorer")
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail=f"Public Bitcoin data provider returned HTTP {exc.response.status_code}.")
+    except (httpx.HTTPError, ValueError, TypeError) as exc:
+        raise HTTPException(status_code=502, detail=f"Could not retrieve live Bitcoin feed: {type(exc).__name__}.")
+
+    transactions = []
+    for tx in recent_txs[:10]:
+        try:
+            transactions.append({
+                "txid": str(tx.get("txid", "")),
+                "fee_sats": int(tx.get("fee", 0)),
+                "vsize": int(tx.get("vsize", 0)),
+                "value_sats": int(tx.get("value", 0)),
+            })
+        except (ValueError, TypeError):
+            continue
+
+    latest_blocks = []
+    for block in blocks[:10]:
+        try:
+            latest_blocks.append({
+                "height": int(block.get("height", 0)),
+                "hash": str(block.get("id", "")),
+                "timestamp_unix": int(block.get("timestamp", 0)),
+                "transaction_count": int(block.get("tx_count", 0)),
+                "size_bytes": int(block.get("size", 0)),
+            })
+        except (ValueError, TypeError):
+            continue
+
+    return {
+        "status": "ok",
+        "network": "Bitcoin mainnet",
+        "provider": "Blockstream Esplora public API",
+        "source_base_url": ESPLORA_API,
+        "retrieved_at": datetime.now(timezone.utc).isoformat(),
+        "mempool": {
+            "transaction_count": int(mempool.get("count", 0)),
+            "virtual_size_bytes": int(mempool.get("vsize", 0)),
+            "total_fee_sats": int(mempool.get("total_fee", 0)),
+        },
+        "recent_mempool_transactions": transactions,
+        "latest_blocks": latest_blocks,
+        "scope": {
+            "read_only": True,
+            "transaction_signing": False,
+            "transaction_broadcasting": False,
+            "mining": False,
+        },
+    }
