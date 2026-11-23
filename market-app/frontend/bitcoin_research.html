@@ -35,6 +35,23 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0b1017;border:1px so
 <p class="note" id="network-meta">Source: Blockstream Esplora public API · Bitcoin mainnet</p>
 <pre id="network-details">No network result yet.</pre>
 </section>
+
+<section class="panel">
+<strong>Live transactions &amp; mempool</strong>
+<p class="note">Read-only snapshot of recent unconfirmed transactions, mempool statistics and latest accepted blocks from Bitcoin mainnet. Refresh manually to request a new snapshot.</p>
+<button id="feed-run">Refresh live feed</button><span class="status" id="feed-status">Ready · no feed request yet</span>
+<div class="grid">
+<div class="metric"><span>Mempool transactions</span><strong id="mempool-count">—</strong></div>
+<div class="metric"><span>Mempool virtual size</span><strong id="mempool-size">—</strong></div>
+<div class="metric"><span>Total mempool fees</span><strong id="mempool-fees">—</strong></div>
+</div>
+<h3>Recent unconfirmed transactions</h3>
+<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:9px">Transaction ID</th><th style="text-align:right;padding:9px">Fee (sat)</th><th style="text-align:right;padding:9px">vBytes</th></tr></thead><tbody id="recent-txs"><tr><td colspan="3" class="note">No live data requested yet.</td></tr></tbody></table></div>
+<h3>Latest accepted blocks</h3>
+<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:9px">Height</th><th style="text-align:right;padding:9px">Transactions</th><th style="text-align:right;padding:9px">Time (UTC)</th></tr></thead><tbody id="latest-blocks"><tr><td colspan="3" class="note">No live data requested yet.</td></tr></tbody></table></div>
+<p class="note" id="feed-meta">Source: Blockstream Esplora public API · Bitcoin mainnet</p>
+</section>
+
 <section class="panel">
 <strong>Offline SHA-256d benchmark</strong><p class="note">This performs offline hashing of the same verified Genesis Block header for approximately one second. It measures this Render service's computation speed, not Bitcoin mining performance.</p>
 <button id="run">Run one-second benchmark</button><span class="status" id="status">Ready · no experiment run yet</span>
