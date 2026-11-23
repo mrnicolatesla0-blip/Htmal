@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090c12"><title>Bitcoin Research Engine | Bharat Market Data</title>
+<style>
+:root{color-scheme:dark;--bg:#090c12;--panel:#141a23;--line:#293342;--text:#edf3fa;--muted:#9ba8b8;--green:#43d6a0;--cyan:#9de8e1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:28px 18px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+a{color:var(--cyan);text-decoration:none}.brand{font-weight:800;letter-spacing:.2px}.eyebrow{color:var(--cyan);font-size:10px;letter-spacing:1.7px;text-transform:uppercase;margin-top:34px}
+h1{font-size:clamp(27px,5vw,42px);letter-spacing:-1.2px;margin:10px 0}.lead{color:var(--muted);line-height:1.7;max-width:720px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:20px;margin-top:20px}
+button{background:#1e3b37;border:1px solid #367b68;color:#d9fff2;padding:13px 18px;border-radius:10px;font-weight:750;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}.status{color:var(--muted);font-size:12px;margin-left:10px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+.metric{background:#0e141c;border:1px solid #263241;border-radius:11px;padding:15px;min-width:0}
+.metric span{display:block;color:var(--muted);font-size:11px}.metric strong{display:block;font-size:clamp(19px,3vw,27px);margin-top:8px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0b1017;border:1px solid #263241;padding:13px;border-radius:9px;color:#c9d6e4;font-size:11px;line-height:1.6}
+.note{color:var(--muted);font-size:12px;line-height:1.7}.pass{color:var(--green)}.warn{color:#f0c674}
+@media(max-width:650px){.grid{grid-template-columns:1fr 1fr}.panel{padding:15px}.status{display:block;margin:10px 0 0}}
+</style></head>
+<body><main>
+<div class="top"><div class="brand">🇮🇳 BHARAT MARKET DATA</div><a href="/">← Back to market dashboard</a></div>
+<div class="eyebrow">Research module · Experiment 001</div>
+<h1>Bitcoin Research Engine</h1>
+<p class="lead">A reproducible SHA-256d throughput experiment using the authentic 80-byte Bitcoin Genesis Block header. The benchmark runs for approximately one second on this Render service and reports its actual measurements.</p>
+<section class="panel">
+<strong>Run one-second computation</strong><p class="note">This performs offline hashing of the same verified header. It does not search nonces, connect to Bitcoin, submit shares, or mine cryptocurrency.</p>
+<button id="run">Run experiment</button><span class="status" id="status">Ready · no experiment run yet</span>
+<div class="grid">
+<div class="metric"><span>Hash calculations</span><strong id="count">—</strong></div>
+<div class="metric"><span>Measured duration</span><strong id="duration">—</strong></div>
+<div class="metric"><span>Throughput</span><strong id="rate">—</strong></div>
+</div>
+</section>
+<section class="panel">
+<strong>Verification record</strong>
+<p class="note" id="verify">The known Genesis Block hash will be checked before each timed run.</p>
+<pre id="digest">No result yet.</pre>
+</section>
+<section class="panel">
+<strong>Experiment scope</strong>
+<p class="note"><span class="pass">✓</span> Real SHA-256d calculations · <span class="pass">✓</span> Verified reference header · <span class="pass">✓</span> Measured execution time</p>
+<p class="note"><span class="warn">Not mining:</span> Fixed input, no nonce search, no Bitcoin node or pool connection, and zero network submissions. Results measure this service's benchmark throughput only.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+$('run').addEventListener('click',async()=>{
+ const button=$('run');button.disabled=true;$('status').textContent='Computing for approximately one second…';
+ $('verify').textContent='Checking the Genesis Block reference and running the timed benchmark.';
+ try{
+  const response=await fetch('/api/research/sha256d-benchmark',{method:'POST'});
+  const data=await response.json();if(!response.ok||data.status!=='completed')throw new Error(data.detail||data.message||'Experiment failed');
+  $('count').textContent=Number(data.measurement.hash_calculations).toLocaleString();
+  $('duration').textContent=data.measurement.duration_seconds.toFixed(6)+' s';
+  $('rate').textContent=Number(data.measurement.hashes_per_second).toLocaleString()+' /s';
+  $('verify').innerHTML=data.reference.verified?'<span class="pass">PASS</span> · Reference digest matches the canonical Genesis Block hash.':'<span class="warn">FAIL</span> · Reference digest mismatch.';
+  $('digest').textContent='Header bytes: '+data.reference.header_bytes+'\nExpected block hash: '+data.reference.expected_hash+'\nCalculated block hash: '+data.reference.calculated_hash+'\nLast benchmark digest: '+data.measurement.last_digest_display_order+'\nStarted (UTC): '+data.started_at+'\nNetwork submissions: '+data.scope.network_submissions+'\nNonce search: '+data.scope.nonce_search+'\n\n'+data.scope.description;
+  $('status').textContent='Completed · actual server-side measurement';
+ }catch(error){$('status').textContent='Error: '+error.message;$('verify').textContent='No verified result was returned.'}
+ finally{button.disabled=false}
+});
+</script></body></html>
