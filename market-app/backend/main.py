@@ -5,8 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .nse_client import NSE_SERVERS, call_nse_tool, list_nse_tools
+from .bitcoin_research import router as bitcoin_research_router
 
-app = FastAPI(title="Bharat Market Data API", version="0.2.0")
+app = FastAPI(title="Bharat Market Data API", version="0.3.0")
+app.include_router(bitcoin_research_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://127.0.0.1:8000", "http://localhost:8000"],
