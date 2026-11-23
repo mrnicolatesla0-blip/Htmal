@@ -1,5 +1,6 @@
 """Bitcoin research endpoints: offline hashing and read-only public-chain verification."""
 import hashlib
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -186,5 +187,105 @@ async def bitcoin_network_tip():
             "nonce_search": False,
             "mining_pool_connected": False,
             "network_submissions": 0,
+        },
+    }
+
+
+
+@router.get("/bitcoin-wallet-monitor")
+def bitcoin_wallet_monitor_page():
+    page = Path(__file__).parent.parent / "frontend" / "bitcoin_wallet_monitor.html"
+    return FileResponse(page)
+
+
+@router.get("/api/research/bitcoin/address/{address}")
+async def bitcoin_address_monitor(address: str):
+    """Read-only public address balance and recent transaction monitor.
+
+    No private keys, wallet generation, signing, broadcasting, or spending.
+    """
+    address = address.strip()
+    base58_ok = re.fullmatch(r"[13][a-km-zA-HJ-NP-Z1-9]{25,34}", address) is not None
+    bech32_ok = re.fullmatch(r"bc1[ac-hj-np-z02-9]{11,71}", address.lower()) is not None
+    if not (base58_ok or bech32_ok):
+        raise HTTPException(status_code=400, detail="Enter a syntactically valid Bitcoin mainnet address.")
+
+    timeout = httpx.Timeout(15.0, connect=8.0)
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            info_response = await client.get(f"{ESPLORA_API}/address/{address}")
+            if info_response.status_code == 404:
+                raise HTTPException(status_code=404, detail="Address was not found by the public explorer.")
+            info_response.raise_for_status()
+            info = info_response.json()
+
+            tx_response = await client.get(f"{ESPLORA_API}/address/{address}/txs")
+            tx_response.raise_for_status()
+            transactions = tx_response.json()
+    except HTTPException:
+        raise
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail=f"Public explorer returned HTTP {exc.response.status_code}.")
+    except (httpx.HTTPError, ValueError, TypeError) as exc:
+        raise HTTPException(status_code=502, detail=f"Could not retrieve public address data: {type(exc).__name__}.")
+
+    try:
+        chain = info.get("chain_stats") or {}
+        mempool = info.get("mempool_stats") or {}
+        confirmed_received = int(chain.get("funded_txo_sum", 0))
+        confirmed_spent = int(chain.get("spent_txo_sum", 0))
+        pending_received = int(mempool.get("funded_txo_sum", 0))
+        pending_spent = int(mempool.get("spent_txo_sum", 0))
+        recent = []
+        for tx in transactions[:25]:
+            net_sats = 0
+            for output in tx.get("vout", []):
+                if output.get("scriptpubkey_address") == address:
+                    net_sats += int(output.get("value", 0))
+            for txin in tx.get("vin", []):
+                prevout = txin.get("prevout") or {}
+                if prevout.get("scriptpubkey_address") == address:
+                    net_sats -= int(prevout.get("value", 0))
+            status = tx.get("status") or {}
+            recent.append({
+                "txid": tx.get("txid"),
+                "confirmed": bool(status.get("confirmed")),
+                "block_time": status.get("block_time"),
+                "net_sats": net_sats,
+                "direction": "incoming" if net_sats > 0 else ("outgoing" if net_sats < 0 else "no net change"),
+            })
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise HTTPException(status_code=502, detail=f"Public explorer returned unexpected address data: {type(exc).__name__}.")
+
+    confirmed_balance = confirmed_received - confirmed_spent
+    mempool_delta = pending_received - pending_spent
+    total_balance = confirmed_balance + mempool_delta
+    return {
+        "status": "ok",
+        "network": "Bitcoin mainnet",
+        "provider": "Blockstream Esplora public API",
+        "address": address,
+        "retrieved_at": datetime.now(timezone.utc).isoformat(),
+        "balance": {
+            "confirmed_sats": confirmed_balance,
+            "pending_delta_sats": mempool_delta,
+            "total_including_pending_sats": total_balance,
+            "confirmed_btc": confirmed_balance / 100_000_000,
+            "total_including_pending_btc": total_balance / 100_000_000,
+            "confirmed_received_sats": confirmed_received,
+            "confirmed_spent_sats": confirmed_spent,
+        },
+        "transaction_count": {
+            "confirmed": int(chain.get("tx_count", 0)),
+            "mempool": int(mempool.get("tx_count", 0)),
+        },
+        "recent_transactions": recent,
+        "scope": {
+            "public_address_only": True,
+            "private_key_requested": False,
+            "private_key_stored": False,
+            "transaction_signing": False,
+            "transaction_broadcasting": False,
+            "spending_enabled": False,
         },
     }
