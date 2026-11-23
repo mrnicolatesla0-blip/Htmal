@@ -92,6 +92,31 @@ $('network-run').addEventListener('click',async()=>{
  }catch(error){$('network-status').textContent='Error: '+error.message;$('network-details').textContent='No verified network result was returned.'}
  finally{button.disabled=false}
 });
+$('feed-run').addEventListener('click',async()=>{
+ const button=$('feed-run');button.disabled=true;$('feed-status').textContent='Requesting live mainnet data…';
+ $('recent-txs').innerHTML='<tr><td colspan="3" class="note">Loading recent transactions…</td></tr>';
+ $('latest-blocks').innerHTML='<tr><td colspan="3" class="note">Loading latest blocks…</td></tr>';
+ try{
+  const response=await fetch('/api/research/bitcoin/live-feed');
+  const data=await response.json();if(!response.ok)throw new Error(data.detail||'Live feed request failed');
+  const m=data.mempool;
+  $('mempool-count').textContent=Number(m.transaction_count).toLocaleString();
+  $('mempool-size').textContent=Number(m.virtual_size_bytes).toLocaleString()+' vB';
+  $('mempool-fees').textContent=Number(m.total_fee_sats).toLocaleString()+' sat';
+  $('recent-txs').innerHTML=data.recent_mempool_transactions.length?data.recent_mempool_transactions.map(tx=>
+   '<tr><td style="padding:9px;border-top:1px solid #293342"><a target="_blank" rel="noopener" href="https://blockstream.info/tx/'+encodeURIComponent(tx.txid)+'">'+tx.txid.slice(0,18)+'…</a></td><td style="text-align:right;padding:9px;border-top:1px solid #293342">'+Number(tx.fee_sats).toLocaleString()+'</td><td style="text-align:right;padding:9px;border-top:1px solid #293342">'+Number(tx.vsize).toLocaleString()+'</td></tr>'
+  ).join(''):'<tr><td colspan="3" class="note">No recent transactions returned.</td></tr>';
+  $('latest-blocks').innerHTML=data.latest_blocks.map(block=>
+   '<tr><td style="padding:9px;border-top:1px solid #293342"><a target="_blank" rel="noopener" href="https://blockstream.info/block/'+encodeURIComponent(block.hash)+'">'+Number(block.height).toLocaleString()+'</a></td><td style="text-align:right;padding:9px;border-top:1px solid #293342">'+Number(block.transaction_count).toLocaleString()+'</td><td style="text-align:right;padding:9px;border-top:1px solid #293342">'+(block.timestamp_unix?new Date(block.timestamp_unix*1000).toLocaleString():'—')+'</td></tr>'
+  ).join('');
+  $('feed-meta').textContent='Source: '+data.provider+' · '+data.network+' · Retrieved '+data.retrieved_at+' · Read-only';
+  $('feed-status').textContent='Live snapshot retrieved · '+data.recent_mempool_transactions.length+' recent transactions · '+data.latest_blocks.length+' blocks';
+ }catch(error){
+  $('feed-status').textContent='Error: '+error.message;
+  $('recent-txs').innerHTML='<tr><td colspan="3" class="note">Feed unavailable. Refresh to retry.</td></tr>';
+  $('latest-blocks').innerHTML='<tr><td colspan="3" class="note">Feed unavailable. Refresh to retry.</td></tr>';
+ }finally{button.disabled=false}
+});
 $('run').addEventListener('click',async()=>{
  const button=$('run');button.disabled=true;$('status').textContent='Computing for approximately one second…';
  $('verify').textContent='Checking the Genesis Block reference and running the timed benchmark.';
